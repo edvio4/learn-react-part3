@@ -1,7 +1,7 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const Note = require('./models/note');
+require('dotenv').config();
 
 const app = express();
 
@@ -10,16 +10,14 @@ app.use(express.json());
 app.use(express.static('build'));
 
 const errorHandler = (error, request, response, next) => {
-    console.log(JSON.stringify(error.reason));
-
     if (error.name === 'CastError' && error.path === '_id') {
-        return response.status(400).send({ error: 'malformatted id' })
-    } else if (error.name === "ValidationError") {
+        return response.status(400).send({ error: 'malformatted id' });
+    } else if (error.name === 'ValidationError') {
         return response.status(400).json({ error: error.message });
     }
 
     next(error);
-}
+};
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>');
@@ -62,8 +60,10 @@ app.post('/api/notes', (request, response, next) => {
         .then(savedNote => {
             response.json(savedNote);
         })
-        .catch(next);;
+        .catch(next);
 });
+
+app.use(errorHandler);
 
 app.put('/api/notes/:id', (request, response, next) => {
     const body = request.body;
@@ -71,7 +71,7 @@ app.put('/api/notes/:id', (request, response, next) => {
     const note = {
         content: body.content,
         important: body.important
-    }
+    };
 
     Note.findByIdAndUpdate(request.params.id, note, {new: true})
         .then(updatedNote => {
