@@ -1,94 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const Note = require('./models/note');
-require('dotenv').config();
+const app = require('./app'); // the actual Express application
+const http = require('http');
+const config = require('./utils/config');
+const logger = require('./utils/logger');
 
-const app = express();
+const server = http.createServer(app);
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static('build'));
-
-const errorHandler = (error, request, response, next) => {
-    if (error.name === 'CastError' && error.path === '_id') {
-        return response.status(400).send({ error: 'malformatted id' });
-    } else if (error.name === 'ValidationError') {
-        return response.status(400).json({ error: error.message });
-    }
-
-    next(error);
-};
-
-app.get('/', (request, response) => {
-    response.send('<h1>Hello World!</h1>');
-});
-
-app.get('/api/notes', (request, response, next) => {
-    Note.find({})
-        .then(notes => {
-            response.json(notes);
-        })
-        .catch(next);
-});
-
-app.get('/api/notes/:id', (request, response, next) => {
-    Note.findById(request.params.id)
-        .then(note => {
-            response.json(note);
-        })
-        .catch(next);
-});
-
-app.use(errorHandler);
-
-app.post('/api/notes', (request, response, next) => {
-    const body = request.body;
-
-    if (!body.content) {
-        return response.status(400).json({
-            error: 'content missing'
-        });
-    }
-
-    const note = new Note({
-        content: body.content,
-        date: new Date(),
-        important: body.important,
-    });
-
-    note.save()
-        .then(savedNote => {
-            response.json(savedNote);
-        })
-        .catch(next);
-});
-
-app.use(errorHandler);
-
-app.put('/api/notes/:id', (request, response, next) => {
-    const body = request.body;
-
-    const note = {
-        content: body.content,
-        important: body.important
-    };
-
-    Note.findByIdAndUpdate(request.params.id, note, {new: true})
-        .then(updatedNote => {
-            response.json(updatedNote);
-        })
-        .catch(next);
-
-});
-
-app.delete('/api/notes/:id', (request, response, next) => {
-    Note.findByIdAndDelete(request.params.id)
-        .then(() => response.status(204).end())
-        .catch(next);
-
-});
-
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+server.listen(config.PORT, () => {
+    logger.info(`Server running on port ${config.PORT}`);
 });
