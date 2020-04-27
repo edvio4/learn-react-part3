@@ -1,7 +1,3 @@
-const mongoose = require('mongoose');
-const supertest = require('supertest');
-const app = require('../app');
-const api = supertest(app);
 const Note = require('../models/note');
 const helper = require('./test_helper');
 
@@ -79,7 +75,7 @@ describe('create a note', () => {
 describe('get a note', () => {
     test('a specific note can be viewed', async () => {
         const notesAtStart = await helper.notesInDb();
-        console.log(notesAtStart)
+
         const noteToView = notesAtStart[0];
 
         const resultNote = await api

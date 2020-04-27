@@ -11,15 +11,11 @@ const noteSchema = new mongoose.Schema({
         required: true
     },
     important: Boolean,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 });
-
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-        console.log('connected to MongoDB');
-    })
-    .catch((error) => {
-        console.log('error connecting to MongoDB:', error.message);
-    });
 
 noteSchema.set('toJSON', {
     transform: (document, returnedObject) => {
